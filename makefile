@@ -28,6 +28,7 @@ OBJ = src/startup_stm32f4xx.o\
   src/usbd_cdc_vcp.o\
   src/usbd_desc.o\
   src/usbd_usr.o\
+  src/lsm303dlhc_driver.o\
   src/newlib_stubs.o\
   src/i2c.o\
   FreeRTOS/Source/tasks.o\
