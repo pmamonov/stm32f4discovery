@@ -17,6 +17,8 @@
 
 #include "assert.h"
 
+#define POLL_PERIOD 40
+
 void task_echo(void* vpars);
 void led_toggle(void);
 
@@ -68,7 +70,7 @@ int main(void)
   I2C_InitStruct.I2C_OwnAddress1 = 0xab;
   I2C_InitStruct.I2C_Ack = I2C_Ack_Enable;
   I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
-  I2C_InitStruct.I2C_ClockSpeed = 10000;
+  I2C_InitStruct.I2C_ClockSpeed = 50000;
   
   /* Initialize the I2C peripheral w/ selected parameters */
   I2C_Init(I2C1, &I2C_InitStruct);
@@ -94,6 +96,7 @@ int main(void)
 
 void task_echo(void *vpars)
 {
+	portTickType t = 0, t1 = 0;
 	AccAxesRaw_t data;
 	MagAxesRaw_t dataM;
 	AxesRaw_t dataR;
@@ -112,6 +115,9 @@ void task_echo(void *vpars)
 	ASSERT(L3G4200D_SetAxis(L3G4200D_X_ENABLE | L3G4200D_Y_ENABLE | L3G4200D_Z_ENABLE));
 
 	while (1) {
+		while ((t - t1) < POLL_PERIOD)
+			t = xTaskGetTickCount();
+
 		led_toggle();
 
 		ASSERT(GetAccAxesRaw(&data));
@@ -126,7 +132,7 @@ void task_echo(void *vpars)
 			dataR.AXIS_X, dataR.AXIS_Y, dataR.AXIS_Z);
 		fflush(stdout);
 
-		vTaskDelay(100);
+		t1 = t;
 	}
 }
 
