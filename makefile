@@ -29,6 +29,7 @@ OBJ = src/startup_stm32f4xx.o\
   src/usbd_desc.o\
   src/usbd_usr.o\
   src/newlib_stubs.o\
+  src/i2c.o\
   FreeRTOS/Source/tasks.o\
   FreeRTOS/Source/queue.o\
   FreeRTOS/Source/list.o\
@@ -44,7 +45,8 @@ OBJ = src/startup_stm32f4xx.o\
   STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.o\
   STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.o\
   STM32F4xx_StdPeriph_Driver/src/misc.o\
-	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.o
+	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.o \
+	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_i2c.o
 
 
 all: main.bin
