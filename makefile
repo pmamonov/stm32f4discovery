@@ -62,3 +62,5 @@ clean:
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+load: main.bin
+	openocd -f fwload.openocd

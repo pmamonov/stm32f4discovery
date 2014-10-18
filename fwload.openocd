@@ -1,0 +1,10 @@
+source [find board/stm32f4discovery.cfg]
+init
+reset init
+
+# 64K IS ENOUGH FOR ANYBODY!
+flash erase_sector 0 0 3
+
+flash write_bank 0 main.bin 0
+reset run
+shutdown
