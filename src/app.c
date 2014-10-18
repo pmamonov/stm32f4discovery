@@ -13,6 +13,8 @@
 
 #include "lsm303dlhc_driver.h"
 
+#include "l3g4200d_driver.h"
+
 #include "assert.h"
 
 void task_echo(void* vpars);
@@ -94,6 +96,7 @@ void task_echo(void *vpars)
 {
 	AccAxesRaw_t data;
 	MagAxesRaw_t dataM;
+	AxesRaw_t dataR;
 
 	ASSERT(SetODR(ODR_100Hz));
 	ASSERT(SetODR_M(ODR_220Hz_M));
@@ -103,16 +106,24 @@ void task_echo(void *vpars)
 	ASSERT(SetGainMag(GAIN_450_M));
 	ASSERT(SetAxis(X_ENABLE | Y_ENABLE | Z_ENABLE));
 
+	ASSERT(L3G4200D_SetODR(L3G4200D_ODR_95Hz_BW_25));
+	ASSERT(L3G4200D_SetMode(L3G4200D_NORMAL));
+	ASSERT(L3G4200D_SetFullScale(L3G4200D_FULLSCALE_250));
+	ASSERT(L3G4200D_SetAxis(L3G4200D_X_ENABLE | L3G4200D_Y_ENABLE | L3G4200D_Z_ENABLE));
+
 	while (1) {
 		led_toggle();
 
 		ASSERT(GetAccAxesRaw(&data));
 		ASSERT(GetMagAxesRaw(&dataM));
+		ASSERT(L3G4200D_GetAngRateRaw(&dataR));
 
 		iprintf("a: %6d %6d %6d\r\n",
 			data.AXIS_X, data.AXIS_Y, data.AXIS_Z);
-		iprintf("H: %6d %6d %6d\r\n\n",
+		iprintf("H: %6d %6d %6d\r\n",
 			dataM.AXIS_X, dataM.AXIS_Y, dataM.AXIS_Z);
+		iprintf("R: %6d %6d %6d\r\n\n",
+			dataR.AXIS_X, dataR.AXIS_Y, dataR.AXIS_Z);
 		fflush(stdout);
 
 		vTaskDelay(100);
