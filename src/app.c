@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "usbd_cdc_core.h"
 #include "usbd_usr.h"
@@ -11,7 +12,7 @@
 
 #include "stm32f4xx_gpio.h"
 
-void task_echo(void* vpars);
+void task_chat(void* vpars);
 void task_blink(void* vpars);
 
 __ALIGN_BEGIN  USB_OTG_CORE_HANDLE  USB_OTG_dev  __ALIGN_END;
@@ -45,19 +46,46 @@ int main(void)
 	setvbuf(stderr, NULL, _IONBF, 0);
 
 	xTaskCreate(task_blink, "blink", 100, NULL, tskIDLE_PRIORITY+1, NULL);
-	xTaskCreate(task_echo, "echo", 2048, NULL, tskIDLE_PRIORITY+1, NULL);
+	xTaskCreate(task_chat, "task_chat", 2048, NULL, tskIDLE_PRIORITY+1, NULL);
 	vTaskStartScheduler();
 } 
 
-void task_echo(void *vpars)
+void task_chat(void *vpars)
 {
+#define CMD_LEN 255
 	int c;
+	char cmd[CMD_LEN+1];
+	int pos = 0;
+	char *tk;
+	
 	while (1) {
+		fflush(stdout);
 		c = getchar();
 		putchar(c);
-		if (c == '\r')
-			putchar('\n');
-		fflush(stdout);
+		if (c == '\b') {
+			if (pos > 0)
+				pos--;
+			continue;
+		}
+		if (c == '\r') {
+			printf("\r\n");
+			/* parse cmd */
+			cmd[pos] = 0;
+			tk = strtok(cmd, " ");
+			if (strcmp(tk, "ping") == 0) {
+				printf("pong");
+			} else {
+				printf("nonsense!");
+			}
+
+			printf("\r\n> ");
+			pos = 0;
+			continue;
+		}
+		if (pos < CMD_LEN) {
+			cmd[pos] = c;
+			pos++;
+		}
 	}
 }
 
