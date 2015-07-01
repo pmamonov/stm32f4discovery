@@ -48,6 +48,7 @@
 #endif
 
 #include "usbd_cdc_core.h"
+#include "can.h"
 
 //#include "lcd_log.h"
 
@@ -238,6 +239,12 @@ void OTG_HS_EP1_OUT_IRQHandler(void)
 }
 #endif
 
+void CAN1_RX0_IRQHandler(void)
+{
+  CAN_Receive(CANx, CAN_FIFO0, &RxMessage);
+  if (can_listen_handle != NULL)
+  	vTaskNotifyGiveFromISR(can_listen_handle, NULL);
+}
 
 /******************************************************************************/
 /*                 STM32Fxxx Peripherals Interrupt Handlers                   */

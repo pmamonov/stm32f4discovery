@@ -24,6 +24,7 @@ OBJ = src/startup_stm32f4xx.o\
   src/stm32fxxx_it.o\
   src/system_stm32f4xx.o\
   src/app.o\
+  src/can.o\
   src/usb_bsp.o\
   src/usbd_cdc_vcp.o\
   src/usbd_desc.o\
@@ -34,6 +35,7 @@ OBJ = src/startup_stm32f4xx.o\
   FreeRTOS/Source/list.o\
   FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o\
   FreeRTOS/Source/portable/MemMang/heap_3.o\
+  STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.o\
   STM32_USB_Device_Library/Class/cdc/src/usbd_cdc_core.o\
   STM32_USB_Device_Library/Core/src/usbd_ioreq.o\
   STM32_USB_Device_Library/Core/src/usbd_req.o\

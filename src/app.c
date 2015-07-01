@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "usbd_cdc_core.h"
@@ -11,6 +12,8 @@
 #include "task.h"
 
 #include "stm32f4xx_gpio.h"
+
+#include "can.h"
 
 void task_chat(void* vpars);
 void task_blink(void* vpars);
@@ -45,7 +48,11 @@ int main(void)
 	setvbuf(stdout, NULL, _IONBF, 0);
 	setvbuf(stderr, NULL, _IONBF, 0);
 
+	can_init();
+
 	xTaskCreate(task_blink, "blink", 100, NULL, tskIDLE_PRIORITY+1, NULL);
+	xTaskCreate(task_can_listen, "task_can_listen", 2048, NULL, 
+		    tskIDLE_PRIORITY+1, NULL);
 	xTaskCreate(task_chat, "task_chat", 2048, NULL, tskIDLE_PRIORITY+1, NULL);
 	vTaskStartScheduler();
 } 
@@ -57,7 +64,7 @@ void task_chat(void *vpars)
 	char cmd[CMD_LEN+1];
 	int pos = 0;
 	char *tk;
-	
+
 	while (1) {
 		fflush(stdout);
 		c = getchar();
@@ -68,16 +75,69 @@ void task_chat(void *vpars)
 			continue;
 		}
 		if (c == '\r') {
+			int i;
+
 			printf("\r\n");
 			/* parse cmd */
 			cmd[pos] = 0;
 			tk = strtok(cmd, " ");
-			if (strcmp(tk, "ping") == 0) {
-				printf("pong");
+			if (strlen(tk) == 0)
+				goto cmd_finish;
+			if (strcmp(tk, "stop") == 0) {
+				CAN_CancelTransmit(CANx, 0);
+			} else if (strcmp(tk, "status") == 0) {
+				printf("TxStatus: ");
+				switch(CAN_TransmitStatus(CANx, 0)) {
+				case CAN_TxStatus_Ok:
+					printf("OK");
+					break;
+				case CAN_TxStatus_Pending:
+					printf("PENDING");
+					break;
+				case CAN_TxStatus_Failed:
+					printf("FAILED");
+					break;
+				}
+				printf("\r\n");
+				printf("TEC: %d\r\n", CAN_GetLSBTransmitErrorCounter(CANx));
+				printf("REC: %d\r\n", CAN_GetReceiveErrorCounter(CANx));
+				printf("LEC: %d\r\n", CAN_GetLastErrorCode(CANx));
+			} else if (strcmp(tk, "send") == 0) {
+				CanTxMsg TxMessage;
+				/* Transmit Structure preparation */
+				tk = strtok(NULL, " ");
+				if (tk == NULL)
+					goto cmd_error;
+				TxMessage.StdId = strtol(tk, NULL, 0x10);
+				TxMessage.ExtId = TxMessage.StdId;
+				printf("addr: %03x\r\n", TxMessage.StdId);
+				i = 0;
+				do {
+					tk = strtok(NULL, " ");
+					if (tk == NULL)
+						break;
+					TxMessage.Data[i] = strtol(tk, NULL, 0x10);
+					i++;
+				} while (i < 8);
+				if (i == 0)
+					goto cmd_error;
+				TxMessage.DLC = i;
+				printf("payload:");
+				for (i = 0; i < TxMessage.DLC; i++)
+					printf(" %02x", TxMessage.Data[i]);
+				printf("\r\n");
+
+				TxMessage.RTR = CAN_RTR_DATA;
+				TxMessage.IDE = CAN_ID_EXT;
+
+				CAN_Transmit(CANx, &TxMessage);
 			} else {
 				printf("nonsense!");
 			}
-
+			goto cmd_finish;
+cmd_error:
+			printf("check your input!");
+cmd_finish:
 			printf("\r\n> ");
 			pos = 0;
 			continue;
@@ -88,6 +148,7 @@ void task_chat(void *vpars)
 		}
 	}
 }
+
 
 void task_blink(void *vpars)
 {
