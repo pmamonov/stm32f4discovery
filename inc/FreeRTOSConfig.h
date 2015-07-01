@@ -55,5 +55,5 @@ your application. */
 #define INCLUDE_xTaskGetIdleTaskHandle          0
 #define INCLUDE_xTimerGetTimerDaemonTaskHandle  0
 #define INCLUDE_pcTaskGetTaskName               0
-
+#define configUSE_TASK_NOTIFICATIONS		1
 #endif /* FREERTOS_CONFIG_H */
