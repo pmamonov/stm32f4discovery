@@ -1,69 +1,70 @@
 /*
-    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+    FreeRTOS V8.2.1 - Copyright (C) 2015 Real Time Engineers Ltd.
+    All rights reserved
 
-    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
-    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
-
-    ***************************************************************************
-     *                                                                       *
-     *    FreeRTOS tutorial books are available in pdf and paperback.        *
-     *    Complete, revised, and edited pdf reference manuals are also       *
-     *    available.                                                         *
-     *                                                                       *
-     *    Purchasing FreeRTOS documentation will not only help you, by       *
-     *    ensuring you get running as quickly as possible and with an        *
-     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
-     *    the FreeRTOS project to continue with its mission of providing     *
-     *    professional grade, cross platform, de facto standard solutions    *
-     *    for microcontrollers - completely free of charge!                  *
-     *                                                                       *
-     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
-     *                                                                       *
-     *    Thank you for using FreeRTOS, and thank you for your support!      *
-     *                                                                       *
-    ***************************************************************************
-
+    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    >>>NOTE<<< The modification to the GPL is included to allow you to
-    distribute a combined work that includes FreeRTOS without being obliged to
-    provide the source code for proprietary components outside of the FreeRTOS
-    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public
-    License and the FreeRTOS license exception along with FreeRTOS; if not it
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained
-    by writing to Richard Barry, contact details for whom are available on the
-    FreeRTOS WEB site.
+    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+
+    ***************************************************************************
+    >>!   NOTE: The modification to the GPL is included to allow you to     !<<
+    >>!   distribute a combined work that includes FreeRTOS without being   !<<
+    >>!   obliged to provide the source code for proprietary components     !<<
+    >>!   outside of the FreeRTOS kernel.                                   !<<
+    ***************************************************************************
+
+    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE.  Full license text is available on the following
+    link: http://www.freertos.org/a00114.html
+
+    ***************************************************************************
+     *                                                                       *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that is more than just the market leader, it     *
+     *    is the industry's de facto standard.                               *
+     *                                                                       *
+     *    Help yourself get started quickly while simultaneously helping     *
+     *    to support the FreeRTOS project by purchasing a FreeRTOS           *
+     *    tutorial book, reference manual, or both:                          *
+     *    http://www.FreeRTOS.org/Documentation                              *
+     *                                                                       *
+    ***************************************************************************
+
+    http://www.FreeRTOS.org/FAQHelp.html - Having a problem?  Start by reading
+    the FAQ page "My application does not run, what could be wrong?".  Have you
+    defined configASSERT()?
+
+    http://www.FreeRTOS.org/support - In return for receiving this top quality
+    embedded software for free we request you assist our global community by
+    participating in the support forum.
+
+    http://www.FreeRTOS.org/training - Investing in training allows your team to
+    be as productive as possible as early as possible.  Now you can receive
+    FreeRTOS training directly from Richard Barry, CEO of Real Time Engineers
+    Ltd, and the world's leading authority on the world's leading RTOS.
+
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+    compatible FAT file system, and our tiny thread aware UDP/IP stack.
+
+    http://www.FreeRTOS.org/labs - Where new FreeRTOS products go to incubate.
+    Come and try FreeRTOS+TCP, our new open source TCP/IP stack for FreeRTOS.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd. license FreeRTOS to High
+    Integrity Systems ltd. to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and commercial middleware.
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
+    mission critical applications that require provable dependability.
 
     1 tab == 4 spaces!
-    
-    ***************************************************************************
-     *                                                                       *
-     *    Having a problem?  Start by reading the FAQ "My application does   *
-     *    not run, what could be wrong?"                                     *
-     *                                                                       *
-     *    http://www.FreeRTOS.org/FAQHelp.html                               *
-     *                                                                       *
-    ***************************************************************************
-
-    
-    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
-    and contact details.  
-    
-    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool.
-
-    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
-    the code with commercial support, indemnification, and middleware, under 
-    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
-    provide a safety engineered and independently SIL3 certified version under 
-    the SafeRTOS brand: http://www.SafeRTOS.com.
 */
 
 
@@ -82,10 +83,10 @@
 #include "portasm.h"
 
 /* The timer increments every four clocks, hence the divide by 4. */
-#define portTIMER_COMPARE ( unsigned short ) ( ( configCPU_CLOCK_HZ / configTICK_RATE_HZ ) / ( unsigned long ) 4 )
+#define portTIMER_COMPARE ( uint16_t ) ( ( configCPU_CLOCK_HZ / configTICK_RATE_HZ ) / ( uint32_t ) 4 )
 
 /* From the RDC data sheet. */
-#define portENABLE_TIMER_AND_INTERRUPT ( unsigned short ) 0xe001
+#define portENABLE_TIMER_AND_INTERRUPT ( uint16_t ) 0xe001
 
 /* Interrupt control. */
 #define portEIO_REGISTER 0xff22
@@ -116,9 +117,9 @@ static void __interrupt __far prvDummyISR( void );
 
 /*-----------------------------------------------------------*/
 /* See header file for description. */
-portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
+StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters )
 {
-portSTACK_TYPE DS_Reg = 0;
+StackType_t DS_Reg = 0;
 
 	/* Place a few bytes of known values on the bottom of the stack.
 	This is just useful for debugging. */
@@ -154,15 +155,15 @@ portSTACK_TYPE DS_Reg = 0;
 	/* The remaining registers would be pushed on the stack by our context
 	switch function.  These are loaded with values simply to make debugging
 	easier. */
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xAAAA;	/* AX */
+	*pxTopOfStack = ( StackType_t ) 0xAAAA;	/* AX */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xBBBB;	/* BX */
+	*pxTopOfStack = ( StackType_t ) 0xBBBB;	/* BX */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xCCCC;	/* CX */
+	*pxTopOfStack = ( StackType_t ) 0xCCCC;	/* CX */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xDDDD;	/* DX */
+	*pxTopOfStack = ( StackType_t ) 0xDDDD;	/* DX */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xEEEE;	/* ES */
+	*pxTopOfStack = ( StackType_t ) 0xEEEE;	/* ES */
 	pxTopOfStack--;
 
 	/* We need the true data segment. */
@@ -170,17 +171,17 @@ portSTACK_TYPE DS_Reg = 0;
 
 	*pxTopOfStack = DS_Reg;						/* DS */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x0123;	/* SI */
+	*pxTopOfStack = ( StackType_t ) 0x0123;	/* SI */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xDDDD;	/* DI */
+	*pxTopOfStack = ( StackType_t ) 0xDDDD;	/* DI */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0xBBBB;	/* BP */
+	*pxTopOfStack = ( StackType_t ) 0xBBBB;	/* BP */
 
 	return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
-portBASE_TYPE xPortStartScheduler( void )
+BaseType_t xPortStartScheduler( void )
 {
 	/* This is called with interrupts already disabled. */
 
@@ -214,10 +215,11 @@ is being used. */
 	static void __interrupt __far prvPreemptiveTick( void )
 	{
 		/* Get the scheduler to update the task states following the tick. */
-		vTaskIncrementTick();
-
-		/* Switch in the context of the next task to be run. */
-		portSWITCH_CONTEXT();
+		if( xTaskIncrementTick() != pdFALSE )
+		{
+			/* Switch in the context of the next task to be run. */
+			portSWITCH_CONTEXT();
+		}
 
 		/* Reset interrupt. */
 		outport( portEIO_REGISTER, portCLEAR_INTERRUPT );
@@ -227,7 +229,8 @@ is being used. */
 	{
 		/* Same as preemptive tick, but the cooperative scheduler is being used
 		so we don't have to switch in the context of the next task. */
-		vTaskIncrementTick();
+		xTaskIncrementTick();
+		
 		/* Reset interrupt. */
 		outport( portEIO_REGISTER, portCLEAR_INTERRUPT );
 	}
@@ -249,8 +252,8 @@ void vPortEndScheduler( void )
 
 static void prvSetupTimerInterrupt( void )
 {
-const unsigned short usTimerACompare = portTIMER_COMPARE, usTimerAMode = portENABLE_TIMER_AND_INTERRUPT;
-const unsigned short usT2_IRQ = 0x13;
+const uint16_t usTimerACompare = portTIMER_COMPARE, usTimerAMode = portENABLE_TIMER_AND_INTERRUPT;
+const uint16_t usT2_IRQ = 0x13;
 
 	/* Configure the timer, the dummy handler is used here as the init
 	function leaves interrupts enabled. */
