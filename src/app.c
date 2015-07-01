@@ -53,9 +53,11 @@ void task_echo(void *vpars)
 {
 	int c;
 	while (1) {
-		putchar(getchar());
+		c = getchar();
+		putchar(c);
+		if (c == '\r')
+			putchar('\n');
 		fflush(stdout);
-		vTaskDelay(10);
 	}
 }
 
