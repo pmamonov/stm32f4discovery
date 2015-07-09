@@ -1049,7 +1049,7 @@ uint8_t CAN_GetLastErrorCode(CAN_TypeDef* CANx)
   errorcode = (((uint8_t)CANx->ESR) & (uint8_t)CAN_ESR_LEC);
   
   /* Return the error code*/
-  return errorcode;
+  return errorcode >> 4;
 }
 
 /**
