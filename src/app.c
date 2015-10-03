@@ -12,6 +12,10 @@
 
 #include "stm32f4xx_gpio.h"
 
+#include "f4d_leds.h"
+
+#define ARRAY_LEN(a) (sizeof(a) / sizeof(*a))
+
 void task_chat(void* vpars);
 void task_blink(void* vpars);
 
@@ -20,15 +24,15 @@ __ALIGN_BEGIN  USB_OTG_CORE_HANDLE  USB_OTG_dev  __ALIGN_END;
 
 int main(void)
 {
-	GPIO_InitTypeDef sGPIOinit;
+	led_init(&f4d_led_blue);
+	led_init(&f4d_led_red);
+	led_init(&f4d_led_orange);
+	led_init(&f4d_led_green);
 
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-
-	sGPIOinit.GPIO_Pin = 1<<15;
-	sGPIOinit.GPIO_Mode = GPIO_Mode_OUT;
-	sGPIOinit.GPIO_Speed = GPIO_Speed_25MHz;
-	sGPIOinit.GPIO_OType = GPIO_OType_PP;
-	GPIO_Init(GPIOD, &sGPIOinit);
+	led_on(&f4d_led_blue);
+	led_on(&f4d_led_red);
+	led_on(&f4d_led_orange);
+	led_on(&f4d_led_green);
 
 	USBD_Init(&USB_OTG_dev,
 #ifdef USE_USB_OTG_HS 
@@ -45,7 +49,7 @@ int main(void)
 	setvbuf(stdout, NULL, _IONBF, 0);
 	setvbuf(stderr, NULL, _IONBF, 0);
 
-	xTaskCreate(task_blink, "blink", 100, NULL, tskIDLE_PRIORITY+1, NULL);
+//	xTaskCreate(task_blink, "blink", 100, NULL, tskIDLE_PRIORITY+1, NULL);
 	xTaskCreate(task_chat, "task_chat", 2048, NULL, tskIDLE_PRIORITY+1, NULL);
 	vTaskStartScheduler();
 } 
@@ -57,6 +61,14 @@ void task_chat(void *vpars)
 	char cmd[CMD_LEN+1];
 	int pos = 0;
 	char *tk;
+	struct led *leds[] = {
+		&f4d_led_blue,
+		&f4d_led_red,
+		&f4d_led_orange,
+		&f4d_led_green,
+	};
+	int num_leds = ARRAY_LEN(leds);
+	int i = 0;
 	
 	while (1) {
 		fflush(stdout);
@@ -74,6 +86,20 @@ void task_chat(void *vpars)
 			tk = strtok(cmd, " ");
 			if (strcmp(tk, "ping") == 0) {
 				printf("pong");
+			} else if (!strcmp(tk, "on")) {
+				tk = strtok(NULL, " ");
+				if (tk) {
+					i = atoi(tk);
+					if (i >= 0 && i < num_leds)
+						led_on(leds[i]);
+				}
+			} else if (!strcmp(tk, "off")) {
+				tk = strtok(NULL, " ");
+				if (tk) {
+					i = atoi(tk);
+					if (i >= 0 && i < num_leds)
+						led_off(leds[i]);
+				}
 			} else {
 				printf("nonsense!");
 			}
