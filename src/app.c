@@ -117,11 +117,19 @@ void task_chat(void *vpars)
 
 void task_blink(void *vpars)
 {
+	struct led *leds[] = {
+		&f4d_led_blue,
+		&f4d_led_red,
+		&f4d_led_orange,
+		&f4d_led_green,
+	};
+	int i = 0;
+
 	while (1) {
-		GPIO_SetBits(GPIOD, 1<<15);
+		led_on(leds[i]);
 		vTaskDelay(100);
-		GPIO_ResetBits(GPIOD, 1<<15);
-		vTaskDelay(100);
+		led_off(leds[i]);
+		i = i + 1 >= sizeof(leds) / sizeof(struct led *) ? 0 : i + 1; 
 	}
 }
 
