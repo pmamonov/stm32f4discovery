@@ -30,6 +30,7 @@ OBJ = src/startup_stm32f4xx.o\
   src/usbd_usr.o\
   src/newlib_stubs.o\
   src/led.o \
+  src/f4d_leds.o \
   FreeRTOS/Source/tasks.o\
   FreeRTOS/Source/queue.o\
   FreeRTOS/Source/list.o\
