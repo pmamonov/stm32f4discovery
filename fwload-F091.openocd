@@ -1,0 +1,7 @@
+source [find board/st_nucleo_f0.cfg]
+init
+reset init
+flash erase_sector 0 0 127
+flash write_bank 0 main.bin 0
+reset run
+shutdown

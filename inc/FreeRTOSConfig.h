@@ -9,14 +9,23 @@
 your application. */
 //#include "something.h"
 
+
+#ifdef TARGET_F407
+#define configCPU_CLOCK_HZ                  168000000
+#define configTOTAL_HEAP_SIZE               32768
+#endif
+
+#ifdef TARGET_F091
+#define configCPU_CLOCK_HZ                  48000000
+#define configTOTAL_HEAP_SIZE               32768
+#endif
+
 #define configUSE_PREEMPTION                1
 #define configUSE_IDLE_HOOK                 0
 #define configUSE_TICK_HOOK                 0
-#define configCPU_CLOCK_HZ                  168000000
 #define configTICK_RATE_HZ                  1000
 #define configMAX_PRIORITIES                5
 #define configMINIMAL_STACK_SIZE            100
-#define configTOTAL_HEAP_SIZE               16384
 #define configMAX_TASK_NAME_LEN             16
 #define configUSE_TRACE_FACILITY            0
 #define configUSE_16_BIT_TICKS              0

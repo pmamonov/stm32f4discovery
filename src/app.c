@@ -3,45 +3,103 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "FreeRTOS.h"
+#include "task.h"
+
+#ifdef TARGET_F407
 #include "usbd_cdc_core.h"
 #include "usbd_usr.h"
 #include "usb_conf.h"
 #include "usbd_desc.h"
-
-#include "FreeRTOS.h"
-#include "task.h"
-
 #include "stm32f4xx_gpio.h"
+#endif
+
+#ifdef TARGET_F091
+#include "stm32f0xx_gpio.h"
+#include "stm32f0xx_rcc.h"
+#include "stm32f0xx_usart.h"
+#endif
 
 #include "can.h"
+
+#ifdef TARGET_F407
+#define LED_GPIO GPIOD
+#define LED_PIN GPIO_Pin_15
+__ALIGN_BEGIN  USB_OTG_CORE_HANDLE  USB_OTG_dev  __ALIGN_END;
+#endif
+
+#ifdef TARGET_F091
+#define LED_GPIO GPIOA
+#define LED_PIN GPIO_Pin_5
+#endif
 
 void task_chat(void* vpars);
 void task_blink(void* vpars);
 
-__ALIGN_BEGIN  USB_OTG_CORE_HANDLE  USB_OTG_dev  __ALIGN_END;
 
 
 int main(void)
 {
 	GPIO_InitTypeDef sGPIOinit;
+#ifdef TARGET_F091
+	USART_InitTypeDef usart_init = {
+		.USART_BaudRate = 115200,
+		.USART_WordLength = USART_WordLength_8b,
+		.USART_Parity = USART_Parity_No,
+		.USART_StopBits = USART_StopBits_1,
+		.USART_HardwareFlowControl = USART_HardwareFlowControl_None,
+		.USART_Mode = USART_Mode_Tx | USART_Mode_Rx
+	};
+#endif /* TARGET_F091 */
 
+#ifdef TARGET_F407
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-
-	sGPIOinit.GPIO_Pin = 1<<15;
+	sGPIOinit.GPIO_Pin = LED_PIN;
 	sGPIOinit.GPIO_Mode = GPIO_Mode_OUT;
 	sGPIOinit.GPIO_Speed = GPIO_Speed_25MHz;
 	sGPIOinit.GPIO_OType = GPIO_OType_PP;
-	GPIO_Init(GPIOD, &sGPIOinit);
+#endif /* TARGET_F407 */
+#ifdef TARGET_F091
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+	sGPIOinit.GPIO_Pin = LED_PIN;
+	sGPIOinit.GPIO_Mode = GPIO_Mode_OUT;
+	sGPIOinit.GPIO_Speed = GPIO_Speed_Level_2;
+	sGPIOinit.GPIO_OType = GPIO_OType_PP;
+#endif /* TARGET_F091 */
+	GPIO_Init(LED_GPIO, &sGPIOinit);
 
+#ifdef TARGET_F407
 	USBD_Init(&USB_OTG_dev,
-#ifdef USE_USB_OTG_HS 
+#ifdef USE_USB_OTG_HS
 		USB_OTG_HS_CORE_ID,
-#else            
+#else
 		USB_OTG_FS_CORE_ID,
-#endif  
-		&USR_desc, 
-		&USBD_CDC_cb, 
+#endif
+		&USR_desc,
+		&USBD_CDC_cb,
 		&USR_cb);
+#endif /* TARGET_F407 */
+#ifdef TARGET_F091
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_1);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_1);
+
+	sGPIOinit.GPIO_Mode = GPIO_Mode_AF;
+	sGPIOinit.GPIO_Speed = GPIO_Speed_Level_2;
+	sGPIOinit.GPIO_OType = GPIO_OType_PP;
+	sGPIOinit.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	sGPIOinit.GPIO_Pin = GPIO_Pin_2;
+	GPIO_Init(GPIOA, &sGPIOinit);
+
+	sGPIOinit.GPIO_Pin = GPIO_Pin_3;
+	GPIO_Init(GPIOA, &sGPIOinit);
+
+	USART_Init(USART2, &usart_init);
+
+	USART_Cmd(USART2, ENABLE);
+#endif /* TARGET_F091 */
 
 	/* disable stdio buffering */
 	setvbuf(stdin, NULL, _IONBF, 0);
@@ -50,12 +108,16 @@ int main(void)
 
 	can_init();
 
-	xTaskCreate(task_blink, "blink", 100, NULL, tskIDLE_PRIORITY+1, NULL);
-	xTaskCreate(task_can_listen, "task_can_listen", 2048, NULL, 
+	xTaskCreate(task_blink, "blink", 100, NULL,
+		    tskIDLE_PRIORITY + 1, NULL);
+
+	xTaskCreate(task_can_listen, "task_can_listen", 2048, NULL,
 		    tskIDLE_PRIORITY+1, NULL);
-	xTaskCreate(task_chat, "task_chat", 2048, NULL, tskIDLE_PRIORITY+1, NULL);
+
+	xTaskCreate(task_chat, "task_chat", 2048, NULL,
+		    tskIDLE_PRIORITY + 1, NULL);
 	vTaskStartScheduler();
-} 
+}
 
 void task_chat(void *vpars)
 {
@@ -132,13 +194,13 @@ void task_chat(void *vpars)
 
 				CAN_Transmit(CANx, &TxMessage);
 			} else {
-				printf("nonsense!");
+				printf("unknown command");
 			}
 			goto cmd_finish;
 cmd_error:
-			printf("check your input!");
+			printf("can't parse command");
 cmd_finish:
-			printf("\r\n> ");
+			printf("\r\nuCAN> ");
 			pos = 0;
 			continue;
 		}
@@ -149,13 +211,12 @@ cmd_finish:
 	}
 }
 
-
 void task_blink(void *vpars)
 {
 	while (1) {
-		GPIO_SetBits(GPIOD, 1<<15);
+		GPIO_SetBits(LED_GPIO, LED_PIN);
 		vTaskDelay(100);
-		GPIO_ResetBits(GPIOD, 1<<15);
+		GPIO_ResetBits(LED_GPIO, LED_PIN);
 		vTaskDelay(100);
 	}
 }
@@ -167,3 +228,8 @@ void assert_failed(uint8_t* file, uint32_t line)
 }
 #endif
 
+#ifdef TARGET_F091
+void assert_param()
+{
+}
+#endif

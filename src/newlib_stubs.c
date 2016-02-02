@@ -5,20 +5,29 @@
  *      Author: nanoage.co.uk
  */
 #define  __NEWLIB_STUBS
+#include <stdint.h>
 #include "newlib_stubs.h"
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/times.h>
+
+#ifdef TARGET_F407
 #include "stm32f4xx.h"
 #include "usbd_cdc_vcp.h"
-
-#undef errno
-extern int errno;
 
 volatile uint8_t stdin_buffer[STDIN_BUFFER_SIZE];
 volatile uint16_t stdin_buffer_in=0;
 volatile uint16_t stdin_buffer_len=0;
 volatile uint16_t stdin_buffer_out=0;
+#endif
+
+#ifdef TARGET_F091
+#include "stm32f0xx.h"
+#include "stm32f0xx_usart.h"
+#endif
+
+#undef errno
+extern int errno;
 
 /*
  environ
@@ -160,25 +169,33 @@ char * stack = (char*) __get_MSP();
  */
 
 
-int _read(int file, char *ptr, int len) {
-	int n;
-	int num = 0;
+int _read(int file, char *ptr, int len)
+{
+	int n = len;
+
 	switch (file) {
 	case STDIN_FILENO:
-		for (n = 0; n < len; n++) {
-			while (!stdin_buffer_len);
+		while (len--) {
+#ifdef TARGET_F407
+			while (!stdin_buffer_len)
+				;
 			if (stdin_buffer_out >= STDIN_BUFFER_SIZE)
-				stdin_buffer_out=0;
+				stdin_buffer_out = 0;
 			*ptr++ = stdin_buffer[stdin_buffer_out++];
 			stdin_buffer_len--;
-			num++;
+#endif
+#ifdef TARGET_F091
+			while (!USART_GetFlagStatus(USART2, USART_FLAG_RXNE))
+				;
+			*ptr++ = (int)USART_ReceiveData(USART2);
+#endif
 		}
 		break;
 	default:
 		errno = EBADF;
 		return -1;
 	}
-	return num;
+	return n;
 }
 
 /*
@@ -224,17 +241,27 @@ int _read(int file, char *ptr, int len) {
  Write a character to a file. `libc' subroutines will use this system routine for output to all files, including stdout
  Returns -1 on error or number of bytes sent
  */
-int _write(int file, char *ptr, int len) {
-    int n;
-    switch (file) {
-    case STDOUT_FILENO: /*stdout*/
-    case STDERR_FILENO: /* stderr */
-        for (n = 0; n < len; n++)
-            VCP_DataTx(ptr++);
-        break;
-    default:
-        errno = EBADF;
-        return -1;
-    }
-    return len;
+int _write(int file, char *ptr, int len)
+{
+	int n = len;
+
+	switch (file) {
+	case STDOUT_FILENO: /*stdout*/
+	case STDERR_FILENO: /* stderr */
+		while (len--) {
+#ifdef TARGET_F407
+			VCP_DataTx(ptr++);
+#endif
+#ifdef TARGET_F091
+			while (!USART_GetFlagStatus(USART2, USART_FLAG_TXE))
+				;
+			USART_SendData(USART2, *ptr++);
+#endif
+		}
+		break;
+	default:
+		errno = EBADF;
+		return -1;
+	}
+	return n;
 }
