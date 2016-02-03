@@ -36,8 +36,6 @@ __ALIGN_BEGIN  USB_OTG_CORE_HANDLE  USB_OTG_dev  __ALIGN_END;
 void task_chat(void* vpars);
 void task_blink(void* vpars);
 
-
-
 int main(void)
 {
 	GPIO_InitTypeDef sGPIOinit;
