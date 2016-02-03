@@ -1,5 +1,7 @@
-#TARGET = F407
-TARGET = F091
+ifeq ($(strip $(TARGET)),)
+TARGET = F407
+#TARGET = F091
+endif
 
 CROSS_COMPILE	= arm-none-eabi-
 AS		= $(CROSS_COMPILE)as
