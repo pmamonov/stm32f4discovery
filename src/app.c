@@ -146,7 +146,8 @@ void task_chat(void *vpars)
 			if (strlen(tk) == 0)
 				goto cmd_finish;
 			if (strcmp(tk, "stop") == 0) {
-				CAN_CancelTransmit(CANx, 0);
+				for (i = 0; i < CAN_NUM_MB; i++)
+					CAN_CancelTransmit(CANx, i);
 			} else if (strcmp(tk, "stat") == 0) {
 				can_dump_tx();
 			} else if (strcmp(tk, "send") == 0) {
