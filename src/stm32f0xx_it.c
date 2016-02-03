@@ -29,7 +29,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_it.h"
-#include "can.h"
 
 /** @addtogroup Template_Project
   * @{
@@ -87,10 +86,4 @@ void HardFault_Handler(void)
   * @}
   */ 
 
-void CEC_CAN_IRQHandler(void)
-{
-	CAN_Receive(CANx, CAN_FIFO0, &RxMessage);
-	if (can_listen_handle != NULL)
-	vTaskNotifyGiveFromISR(can_listen_handle, NULL);
-}
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

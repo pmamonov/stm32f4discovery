@@ -131,3 +131,16 @@ void task_can_listen(void *vpars)
 		}
 	}
 }
+
+
+#ifdef TARGET_F407
+void CAN1_RX0_IRQHandler(void)
+#endif
+#ifdef TARGET_F091
+void CEC_CAN_IRQHandler(void)
+#endif
+{
+	CAN_Receive(CANx, CAN_FIFO0, &RxMessage);
+	if (can_listen_handle != NULL)
+		vTaskNotifyGiveFromISR(can_listen_handle, NULL);
+}
