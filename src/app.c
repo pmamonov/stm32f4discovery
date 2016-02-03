@@ -148,23 +148,9 @@ void task_chat(void *vpars)
 				goto cmd_finish;
 			if (strcmp(tk, "stop") == 0) {
 				CAN_CancelTransmit(CANx, 0);
-			} else if (strcmp(tk, "status") == 0) {
-				printf("TxStatus: ");
-				switch(CAN_TransmitStatus(CANx, 0)) {
-				case CAN_TxStatus_Ok:
-					printf("OK");
-					break;
-				case CAN_TxStatus_Pending:
-					printf("PENDING");
-					break;
-				case CAN_TxStatus_Failed:
-					printf("FAILED");
-					break;
-				}
-				printf("\r\n");
-				printf("TEC: %d\r\n", CAN_GetLSBTransmitErrorCounter(CANx));
-				printf("REC: %d\r\n", CAN_GetReceiveErrorCounter(CANx));
-				printf("LEC: %d\r\n", CAN_GetLastErrorCode(CANx));
+			} else if (strcmp(tk, "stat") == 0) {
+				for (i = 0; i < CAN_NUM_MB; i++)
+					can_dump_tx(i);
 			} else if (strcmp(tk, "send") == 0) {
 				unsigned int id, len;
 				unsigned char data[8];

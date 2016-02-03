@@ -34,6 +34,8 @@
 #define CAN_IRQ			CEC_CAN_IRQn
 #endif /* TARGET_F091 */
 
+#define CAN_NUM_MB	3
+
 extern CanRxMsg RxMessage;
 extern unsigned int can_id;
 
@@ -42,5 +44,6 @@ extern TaskHandle_t can_listen_handle;
 void can_init();
 void can_filter_setup(unsigned int id, unsigned int mask);
 void can_xmit(unsigned int id, unsigned char *data, int len);
+void can_dump_tx(int n);
 void task_can_listen(void *vpars);
 #endif
