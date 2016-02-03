@@ -166,34 +166,32 @@ void task_chat(void *vpars)
 				printf("REC: %d\r\n", CAN_GetReceiveErrorCounter(CANx));
 				printf("LEC: %d\r\n", CAN_GetLastErrorCode(CANx));
 			} else if (strcmp(tk, "send") == 0) {
-				CanTxMsg TxMessage;
+				unsigned int id, len;
+				unsigned char data[8];
+
 				/* Transmit Structure preparation */
 				tk = strtok(NULL, " ");
 				if (tk == NULL)
 					goto cmd_error;
-				TxMessage.StdId = strtol(tk, NULL, 0x10);
-				TxMessage.ExtId = TxMessage.StdId;
-				printf("addr: %03x\r\n", TxMessage.StdId);
+				id = strtol(tk, NULL, 0x10);
+				printf("addr: %03x\r\n", id);
 				i = 0;
 				do {
 					tk = strtok(NULL, " ");
 					if (tk == NULL)
 						break;
-					TxMessage.Data[i] = strtol(tk, NULL, 0x10);
+					data[i] = strtol(tk, NULL, 0x10);
 					i++;
 				} while (i < 8);
 				if (i == 0)
 					goto cmd_error;
-				TxMessage.DLC = i;
 				printf("payload:");
-				for (i = 0; i < TxMessage.DLC; i++)
-					printf(" %02x", TxMessage.Data[i]);
+				len = i;
+				for (i = 0; i < len; i++)
+					printf(" %02x", data[i]);
 				printf("\r\n");
 
-				TxMessage.RTR = CAN_RTR_DATA;
-				TxMessage.IDE = CAN_ID_EXT;
-
-				CAN_Transmit(CANx, &TxMessage);
+				can_xmit(id, data, len);
 			} else if (strcmp(tk, "addr") == 0) {
 				tk = strtok(NULL, " ");
 				if (tk == NULL) {

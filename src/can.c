@@ -140,6 +140,21 @@ void can_filter_setup(unsigned int id, unsigned int mask)
 	CAN_FilterInit(&filter);
 }
 
+void can_xmit(unsigned int id, unsigned char *data, int len)
+{
+	CanTxMsg TxMessage;
+
+	id &= 0x7ff;
+	TxMessage.StdId = id;
+	TxMessage.ExtId = id;
+	TxMessage.DLC = len;
+	TxMessage.RTR = CAN_RTR_DATA;
+	TxMessage.IDE = CAN_ID_EXT;
+	while (len--)
+		TxMessage.Data[len] = data[len];
+	CAN_Transmit(CANx, &TxMessage);
+}
+
 #ifdef TARGET_F407
 void CAN1_RX0_IRQHandler(void)
 #endif
