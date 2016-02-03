@@ -126,6 +126,7 @@ void task_chat(void *vpars)
 	char cmd[CMD_LEN+1];
 	int pos = 0;
 	char *tk;
+	unsigned int tmp;
 
 	while (1) {
 		fflush(stdout);
@@ -193,6 +194,14 @@ void task_chat(void *vpars)
 				TxMessage.IDE = CAN_ID_EXT;
 
 				CAN_Transmit(CANx, &TxMessage);
+			} else if (strcmp(tk, "addr") == 0) {
+				tk = strtok(NULL, " ");
+				if (tk == NULL) {
+					printf("0x%08x\r\n", can_id);
+					goto cmd_finish;
+				};
+				tmp = strtoul(tk, NULL, 0x10);
+				can_filter_setup(tmp, 0x7ff);
 			} else {
 				printf("unknown command");
 			}
