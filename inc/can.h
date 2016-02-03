@@ -44,6 +44,6 @@ extern TaskHandle_t can_listen_handle;
 void can_init();
 void can_filter_setup(unsigned int id, unsigned int mask);
 void can_xmit(unsigned int id, unsigned char *data, int len);
-void can_dump_tx(int n);
+void can_dump_tx();
 void task_can_listen(void *vpars);
 #endif

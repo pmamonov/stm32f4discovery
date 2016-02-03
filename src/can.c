@@ -155,24 +155,26 @@ void can_xmit(unsigned int id, unsigned char *data, int len)
 	CAN_Transmit(CANx, &TxMessage);
 }
 
-void can_dump_tx(int n)
+void can_dump_tx()
 {
-	if (n >= CAN_NUM_MB)
-		return;
-	printf("MB #%d\r\n", n);
-	printf("TxStatus: ");
-	switch(CAN_TransmitStatus(CANx, 0)) {
-	case CAN_TxStatus_Ok:
-		printf("OK");
-		break;
-	case CAN_TxStatus_Pending:
-		printf("PENDING");
-		break;
-	case CAN_TxStatus_Failed:
-		printf("FAILED");
-		break;
+	int i;
+
+	for (i = 0; i < CAN_NUM_MB; i++) {
+		printf("MB #%d\r\n", i);
+		printf("TxStatus: ");
+		switch(CAN_TransmitStatus(CANx, i)) {
+		case CAN_TxStatus_Ok:
+			printf("OK");
+			break;
+		case CAN_TxStatus_Pending:
+			printf("PENDING");
+			break;
+		case CAN_TxStatus_Failed:
+			printf("FAILED");
+			break;
+		}
+		printf("\r\n");
 	}
-	printf("\r\n");
 	printf("TEC: %d\r\n", CAN_GetLSBTransmitErrorCounter(CANx));
 	printf("REC: %d\r\n", CAN_GetReceiveErrorCounter(CANx));
 	printf("LEC: %d\r\n", CAN_GetLastErrorCode(CANx));

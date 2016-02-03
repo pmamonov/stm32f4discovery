@@ -148,8 +148,7 @@ void task_chat(void *vpars)
 			if (strcmp(tk, "stop") == 0) {
 				CAN_CancelTransmit(CANx, 0);
 			} else if (strcmp(tk, "stat") == 0) {
-				for (i = 0; i < CAN_NUM_MB; i++)
-					can_dump_tx(i);
+				can_dump_tx();
 			} else if (strcmp(tk, "send") == 0) {
 				unsigned int id, len;
 				unsigned char data[8];
