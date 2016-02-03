@@ -108,7 +108,6 @@ void can_init()
 void task_can_listen(void *vpars)
 {
 	uint32_t notify;
-	CanTxMsg TxMessage;
 
 	can_listen_handle = xTaskGetCurrentTaskHandle();
 
@@ -120,18 +119,9 @@ void task_can_listen(void *vpars)
 			printf("StdId: %x\r\n", RxMessage.StdId);
 			printf("ExtId: %x\r\n", RxMessage.ExtId);
 			printf("payload(%d): ", RxMessage.DLC);
-			for (i = 0; i < RxMessage.DLC; i++) {
+			for (i = 0; i < RxMessage.DLC; i++)
 				printf(" %02x", RxMessage.Data[i]);
-				TxMessage.Data[i] = RxMessage.Data[i];
-			}
 			printf("\r\n");
-			printf("Send it back!\r\n");
-			TxMessage.StdId = 0x777;
-			TxMessage.ExtId = 0x777;
-			TxMessage.DLC = RxMessage.DLC;
-			TxMessage.RTR = CAN_RTR_DATA;
-			TxMessage.IDE = CAN_ID_EXT;
-			CAN_Transmit(CANx, &TxMessage);
 		}
 	}
 }
