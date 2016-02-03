@@ -16,6 +16,12 @@ CanRxMsg RxMessage;
 TaskHandle_t can_listen_handle = NULL;
 
 unsigned int can_id = 0;
+static int dump_packets = 1;
+
+void can_dump_pkt(int on)
+{
+	dump_packets = on;
+}
 
 static void NVIC_Config(void)
 {
@@ -106,7 +112,7 @@ void task_can_listen(void *vpars)
 
 	while (1) {
 		notify = ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
-		if (notify == 1) {
+		if (notify == 1 && dump_packets) {
 			int i;
 			printf("\r\nCAN packet received\r\n");
 			printf("StdId: %x\r\n", RxMessage.StdId);

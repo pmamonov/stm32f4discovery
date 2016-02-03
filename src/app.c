@@ -146,6 +146,16 @@ void task_chat(void *vpars)
 			if (strcmp(tk, "stop") == 0) {
 				for (i = 0; i < CAN_NUM_MB; i++)
 					CAN_CancelTransmit(CANx, i);
+			} else if (strcmp(tk, "dump") == 0) {
+				tk = strtok(NULL, " ");
+				if (tk == NULL)
+					goto cmd_error;
+				if (strcmp(tk, "on") == 0)
+					can_dump_pkt(1);
+				else if (strcmp(tk, "off") == 0)
+					can_dump_pkt(0);
+				else
+					goto cmd_error;
 			} else if (strcmp(tk, "stat") == 0) {
 				can_dump_tx();
 			} else if (strcmp(tk, "send") == 0) {
