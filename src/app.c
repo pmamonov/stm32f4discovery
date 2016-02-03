@@ -126,7 +126,6 @@ void task_chat(void *vpars)
 	char cmd[CMD_LEN+1];
 	int pos = 0;
 	char *tk;
-	unsigned int tmp;
 
 	while (1) {
 		fflush(stdout);
@@ -179,13 +178,15 @@ void task_chat(void *vpars)
 
 				can_xmit(id, data, len);
 			} else if (strcmp(tk, "addr") == 0) {
+				unsigned int id;
+
 				tk = strtok(NULL, " ");
 				if (tk == NULL) {
 					printf("0x%08x\r\n", can_id);
 					goto cmd_finish;
 				};
-				tmp = strtoul(tk, NULL, 0x10);
-				can_filter_setup(tmp, 0x7ff);
+				id = strtoul(tk, NULL, 0x10);
+				can_filter_setup(id, 0x7ff);
 			} else {
 				printf("unknown command");
 			}
