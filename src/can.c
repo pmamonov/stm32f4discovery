@@ -72,11 +72,15 @@ static void CAN_Config(void)
 	CAN_InitStructure.CAN_TXFP = DISABLE;
 	CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;
 	CAN_InitStructure.CAN_SJW = CAN_SJW_1tq;
-	
-	/* CAN Baudrate = 1 MBps (CAN clocked at 30 MHz) */
-	CAN_InitStructure.CAN_BS1 = CAN_BS1_15tq;
-	CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
-	CAN_InitStructure.CAN_Prescaler = 14;
+#ifdef TARGET_F407
+	CAN_InitStructure.CAN_Prescaler = 7;
+#endif
+#ifdef TARGET_F091
+	CAN_InitStructure.CAN_Prescaler = 8;
+#endif
+	/* 1Mb */
+	CAN_InitStructure.CAN_BS1 = CAN_BS1_2tq;
+	CAN_InitStructure.CAN_BS2 = CAN_BS2_3tq;
 	CAN_Init(CANx, &CAN_InitStructure);
 
 	/* CAN filter init */
