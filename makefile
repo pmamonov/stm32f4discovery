@@ -10,7 +10,7 @@ CXX		= $(CROSS_COMPILE)g++
 LD		= $(CROSS_COMPILE)ld
 OBJCOPY		= $(CROSS_COMPILE)objcopy
 
-CFLAGS =	-DTARGET_$(TARGET)					\
+CFLAGS =	-Os -g -DTARGET_$(TARGET)				\
 		-I./inc							\
 		-IFreeRTOS/Source/include
 
@@ -24,7 +24,7 @@ OBJ =	src/app.o							\
 	FreeRTOS/Source/portable/MemMang/heap_3.o
 
 ifeq ($(TARGET), F407)
-CFLAGS += 	-mcpu=cortex-m4 -mthumb -mfloat-abi=softfp -Os -g	\
+CFLAGS += 	-mcpu=cortex-m4 -mthumb -mfloat-abi=softfp		\
 		-ICMSIS/Device/ST/STM32F4xx/Include			\
 		-ICMSIS/Include						\
 		-ISTM32F4xx_StdPeriph_Driver/inc			\
