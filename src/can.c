@@ -121,14 +121,34 @@ static void CAN_Config(void)
 
 void can_init()
 {
+	queue_init(&rx_queue, sizeof(rx_msg[0]), RX_QUEUE_LEN, &rx_msg[0]);
+	queue_init(&rx_queue_isr, sizeof(rx_msg_isr[0]), RX_QUEUE_LEN, &rx_msg_isr[0]);
 	NVIC_Config();
 	CAN_Config();
 };
 
 void task_can(void *vpars)
 {
-	while (1)
-		;
+	CanRxMsg cmsg;
+	struct can_msg *msg;
+	unsigned int to;
+	int len;
+
+	while (1) {
+		queue_swap(&rx_queue, &rx_queue_isr);
+		while (queue_pop(&rx_queue, &cmsg) == 0) {
+			len = cmsg.DLC;
+			msg = cmsg.Data;
+			if (len == sizeof(*msg) &&
+			    msg->type == CAN_MSG_PING &&
+			    msg->sender != 0) {
+				to = msg->sender;
+				msg->sender = 0;
+				can_xmit(to, msg, len);
+			}
+		}
+		vTaskDelay(1);
+	};
 }
 
 void can_filter_setup(unsigned int id, unsigned int mask)
