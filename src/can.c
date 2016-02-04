@@ -11,11 +11,28 @@
 #include "stm32f0xx_rcc.h"
 #endif
 #include "can.h"
+#include "can_msg.h"
 
 TaskHandle_t can_listen_handle = NULL;
 
 unsigned int can_id = 0;
 static int dump_packets = 1;
+
+static int can_ping_reply(CanRxMsg *rx_msg)
+{
+	struct can_msg *msg;
+	unsigned int dst;
+
+	msg = rx_msg->Data;
+	if (msg->type == CAN_MSG_PING && msg->sender) {
+		dst = msg->sender;
+		msg->sender = 0;
+		can_xmit(dst, msg, rx_msg->DLC);
+		return 0;
+	}
+	return -1;
+}
+
 
 void can_dump_pkt(int on)
 {
@@ -176,7 +193,6 @@ void CEC_CAN_IRQHandler(void)
 	CanRxMsg RxMessage;
 
 	CAN_Receive(CANx, CAN_FIFO0, &RxMessage);
-
 	if (dump_packets) {
 		int i;
 		printf("\r\nCAN packet received\r\n");
