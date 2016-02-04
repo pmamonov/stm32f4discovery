@@ -12,6 +12,13 @@
 #endif
 #include "can.h"
 #include "can_msg.h"
+#include "uqueue.h"
+
+#define RX_QUEUE_LEN 100
+CanRxMsg  rx_msg[RX_QUEUE_LEN];
+CanRxMsg  rx_msg_isr[RX_QUEUE_LEN];
+struct queue rx_queue;
+struct queue rx_queue_isr;
 
 unsigned int can_id = 0;
 static int dump_packets = 1;
@@ -21,7 +28,7 @@ static int can_ping_reply(CanRxMsg *rx_msg)
 	struct can_msg *msg;
 	unsigned int dst;
 
-	msg = rx_msg->Data;
+	msg = (void *)rx_msg->Data;
 	if (msg->type == CAN_MSG_PING && msg->sender) {
 		dst = msg->sender;
 		msg->sender = 0;
@@ -207,4 +214,5 @@ void CEC_CAN_IRQHandler(void)
 			printf(" %02x", RxMessage.Data[i]);
 		printf("\r\n");
 	}
+	queue_push(&rx_queue_isr, &RxMessage);
 }
