@@ -12,7 +12,6 @@
 #endif
 #include "can.h"
 
-CanRxMsg RxMessage;
 TaskHandle_t can_listen_handle = NULL;
 
 unsigned int can_id = 0;
@@ -104,27 +103,6 @@ void can_init()
 	CAN_Config();
 };
 
-void task_can_listen(void *vpars)
-{
-	uint32_t notify;
-
-	can_listen_handle = xTaskGetCurrentTaskHandle();
-
-	while (1) {
-		notify = ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
-		if (notify == 1 && dump_packets) {
-			int i;
-			printf("\r\nCAN packet received\r\n");
-			printf("StdId: %x\r\n", RxMessage.StdId);
-			printf("ExtId: %x\r\n", RxMessage.ExtId);
-			printf("payload(%d): ", RxMessage.DLC);
-			for (i = 0; i < RxMessage.DLC; i++)
-				printf(" %02x", RxMessage.Data[i]);
-			printf("\r\n");
-		}
-	}
-}
-
 void can_filter_setup(unsigned int id, unsigned int mask)
 {
 	CAN_FilterInitTypeDef  filter;
@@ -195,7 +173,18 @@ void CAN1_RX0_IRQHandler(void)
 void CEC_CAN_IRQHandler(void)
 #endif
 {
+	CanRxMsg RxMessage;
+
 	CAN_Receive(CANx, CAN_FIFO0, &RxMessage);
-	if (can_listen_handle != NULL)
-		vTaskNotifyGiveFromISR(can_listen_handle, NULL);
+
+	if (dump_packets) {
+		int i;
+		printf("\r\nCAN packet received\r\n");
+		printf("StdId: %x\r\n", RxMessage.StdId);
+		printf("ExtId: %x\r\n", RxMessage.ExtId);
+		printf("payload(%d): ", RxMessage.DLC);
+		for (i = 0; i < RxMessage.DLC; i++)
+			printf(" %02x", RxMessage.Data[i]);
+		printf("\r\n");
+	}
 }

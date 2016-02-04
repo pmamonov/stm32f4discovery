@@ -109,9 +109,6 @@ int main(void)
 	xTaskCreate(task_blink, "blink", 100, NULL,
 		    tskIDLE_PRIORITY + 1, NULL);
 
-	xTaskCreate(task_can_listen, "task_can_listen", 2048, NULL,
-		    tskIDLE_PRIORITY+1, NULL);
-
 	xTaskCreate(task_chat, "task_chat", 2048, NULL,
 		    tskIDLE_PRIORITY + 1, NULL);
 	vTaskStartScheduler();
