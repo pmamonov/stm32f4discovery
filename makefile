@@ -16,7 +16,8 @@ CFLAGS =	-DTARGET_$(TARGET)					\
 
 OBJ =	src/app.o							\
 	src/can.o							\
-  	src/newlib_stubs.o						\
+	src/newlib_stubs.o						\
+	src/uqueue.o							\
 	FreeRTOS/Source/tasks.o						\
 	FreeRTOS/Source/queue.o						\
 	FreeRTOS/Source/list.o						\
