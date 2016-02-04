@@ -13,8 +13,6 @@
 #include "can.h"
 #include "can_msg.h"
 
-TaskHandle_t can_listen_handle = NULL;
-
 unsigned int can_id = 0;
 static int dump_packets = 1;
 
