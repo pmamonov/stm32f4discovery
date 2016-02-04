@@ -120,6 +120,12 @@ void can_init()
 	CAN_Config();
 };
 
+void task_can(void *vpars)
+{
+	while (1)
+		;
+}
+
 void can_filter_setup(unsigned int id, unsigned int mask)
 {
 	CAN_FilterInitTypeDef  filter;
