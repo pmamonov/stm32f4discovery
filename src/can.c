@@ -185,7 +185,7 @@ void can_xmit(unsigned int id, unsigned char *data, int len)
 	while (len--)
 		TxMessage.Data[len] = data[len];
 	while (CAN_Transmit(CANx, &TxMessage) == CAN_TxStatus_NoMailBox)
-		vTaskDelay(1);
+		;
 }
 
 void can_dump_tx()
