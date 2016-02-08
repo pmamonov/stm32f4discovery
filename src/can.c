@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #ifdef TARGET_F407
@@ -22,6 +23,24 @@ struct queue rx_queue_isr;
 
 unsigned int can_id = 0;
 static int dump_packets = 1;
+
+static volatile struct can_stat can_stat;
+
+void can_stat_reset()
+{
+	memset(&can_stat, 0, sizeof(can_stat));
+}
+
+struct can_stat *can_stat_get()
+{
+	return &can_stat;
+}
+
+void can_stat_dump()
+{
+	printf("TX: %d (%d B)\r\n", can_stat.csent, can_stat.bsent);
+	printf("RX: %d (%d B)\r\n", can_stat.crecv, can_stat.brecv);
+}
 
 static int can_ping_reply(CanRxMsg *rx_msg)
 {
@@ -121,6 +140,7 @@ static void CAN_Config(void)
 
 void can_init()
 {
+	can_stat_reset();
 	queue_init(&rx_queue, sizeof(rx_msg[0]), RX_QUEUE_LEN, &rx_msg[0]);
 	queue_init(&rx_queue_isr, sizeof(rx_msg_isr[0]), RX_QUEUE_LEN, &rx_msg_isr[0]);
 	NVIC_Config();
@@ -139,6 +159,8 @@ void task_can(void *vpars)
 		while (queue_pop(&rx_queue, &cmsg) == 0) {
 			len = cmsg.DLC;
 			msg = cmsg.Data;
+			can_stat.crecv += 1;
+			can_stat.brecv += len;
 			if (len == sizeof(*msg) &&
 			    msg->type == CAN_MSG_PING &&
 			    msg->sender != 0) {
@@ -175,6 +197,9 @@ void can_filter_setup(unsigned int id, unsigned int mask)
 void can_xmit(unsigned int id, unsigned char *data, int len)
 {
 	CanTxMsg TxMessage;
+
+	can_stat.csent += 1;
+	can_stat.bsent += len;
 
 	id &= 0x7ff;
 	TxMessage.StdId = id;
