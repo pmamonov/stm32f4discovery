@@ -147,6 +147,14 @@ void task_chat(void *vpars)
 			if (strcmp(tk, "stop") == 0) {
 				for (i = 0; i < CAN_NUM_MB; i++)
 					CAN_CancelTransmit(CANx, i);
+			} else if (strcmp(tk, "sleep") == 0) {
+				int t;
+
+				tk = strtok(NULL, " ");
+				if (tk == NULL)
+					goto cmd_error;
+				t = strtol(tk, NULL, 10);
+				vTaskDelay(t);
 			} else if (strcmp(tk, "dump") == 0) {
 				tk = strtok(NULL, " ");
 				if (tk == NULL)
