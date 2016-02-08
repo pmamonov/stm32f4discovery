@@ -21,6 +21,7 @@
 #endif
 
 #include "can.h"
+#include "can_msg.h"
 
 #ifdef TARGET_F407
 #define LED_GPIO GPIOD
@@ -162,6 +163,34 @@ void task_chat(void *vpars)
 				tk = strtok(NULL, " ");
 				if (tk != NULL && strcmp(tk, "reset") == 0)
 					can_stat_reset();
+				can_stat_dump();
+			} else if (strcmp(tk, "ping") == 0) {
+				TickType_t tim;
+				struct can_msg msg;
+				int id, count;
+
+				tk = strtok(NULL, " ");
+				if (tk == NULL)
+					goto cmd_error;
+				id = strtol(tk, NULL, 0x10);
+
+				tk = strtok(NULL, " ");
+				if (tk == NULL)
+					goto cmd_error;
+				count = strtol(tk, NULL, 10);
+
+				msg.type = CAN_MSG_PING;
+				msg.sender = can_id;
+
+				can_stat_reset();
+				tim = xTaskGetTickCount();
+
+				while (count--)
+					can_xmit(id, &msg, sizeof(msg));
+
+				vTaskDelay(10);
+				tim = xTaskGetTickCount() - tim;
+				printf("time elapsed: %d ms\r\n", tim);
 				can_stat_dump();
 			} else if (strcmp(tk, "send") == 0) {
 				unsigned int id, len;
