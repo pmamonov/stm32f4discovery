@@ -156,8 +156,13 @@ void task_chat(void *vpars)
 					can_dump_pkt(0);
 				else
 					goto cmd_error;
-			} else if (strcmp(tk, "stat") == 0) {
+			} else if (strcmp(tk, "xstat") == 0) {
 				can_dump_tx();
+			} else if (strcmp(tk, "stat") == 0) {
+				tk = strtok(NULL, " ");
+				if (tk != NULL && strcmp(tk, "reset") == 0)
+					can_stat_reset();
+				can_stat_dump();
 			} else if (strcmp(tk, "send") == 0) {
 				unsigned int id, len;
 				unsigned char data[8];
