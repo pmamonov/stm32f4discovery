@@ -24,7 +24,8 @@ OBJ =	src/app.o							\
 	FreeRTOS/Source/portable/MemMang/heap_3.o
 
 ifeq ($(TARGET), F407)
-CFLAGS += 	-mcpu=cortex-m4 -mthumb -mfloat-abi=softfp		\
+CFLAGS +=	-mthumb -mcpu=cortex-m4					\
+		-mfloat-abi=softfp -mfpu=fpv4-sp-d16			\
 		-ICMSIS/Device/ST/STM32F4xx/Include			\
 		-ICMSIS/Include						\
 		-ISTM32F4xx_StdPeriph_Driver/inc			\
