@@ -181,7 +181,7 @@ void can_xmit(unsigned int id, unsigned char *data, int len)
 	TxMessage.ExtId = id;
 	TxMessage.DLC = len;
 	TxMessage.RTR = CAN_RTR_DATA;
-	TxMessage.IDE = CAN_ID_EXT;
+	TxMessage.IDE = CAN_ID_STD;
 	while (len--)
 		TxMessage.Data[len] = data[len];
 	while (CAN_Transmit(CANx, &TxMessage) == CAN_TxStatus_NoMailBox)
