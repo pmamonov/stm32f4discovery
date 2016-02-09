@@ -1,3 +1,6 @@
+tcl_port 6667
+telnet_port 4445
+gdb_port 3334
 source [find board/stm32f4discovery.cfg]
 init
 reset init
