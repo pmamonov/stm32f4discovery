@@ -12,7 +12,9 @@ OBJCOPY		= $(CROSS_COMPILE)objcopy
 
 CFLAGS =	-Os -g -DTARGET_$(TARGET)				\
 		-I./inc							\
-		-IFreeRTOS/Source/include
+		-IFreeRTOS/Source/include				\
+		-DUSE_STDPERIPH_DRIVER
+
 
 OBJ =	inc/version.h							\
 	src/app.o							\
@@ -33,8 +35,7 @@ CFLAGS +=	-mthumb -mcpu=cortex-m4					\
 		-ISTM32_USB_OTG_Driver/inc				\
 		-ISTM32_USB_Device_Library/Core/inc			\
 		-ISTM32_USB_Device_Library/Class/cdc/inc		\
-		-IFreeRTOS/Source/portable/GCC/ARM_CM4F			\
-		-DUSE_STDPERIPH_DRIVER
+		-IFreeRTOS/Source/portable/GCC/ARM_CM4F
 
 LDSCRIPT 	= stm32_flash.ld
 

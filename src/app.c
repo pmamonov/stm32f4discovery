@@ -293,9 +293,3 @@ void assert_failed(uint8_t* file, uint32_t line)
 	while (1);
 }
 #endif
-
-#ifdef TARGET_F091
-void assert_param()
-{
-}
-#endif
