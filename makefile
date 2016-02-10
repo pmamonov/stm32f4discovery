@@ -14,7 +14,8 @@ CFLAGS =	-Os -g -DTARGET_$(TARGET)				\
 		-I./inc							\
 		-IFreeRTOS/Source/include
 
-OBJ =	src/app.o							\
+OBJ =	inc/version.h							\
+	src/app.o							\
 	src/can.o							\
 	src/newlib_stubs.o						\
 	src/uqueue.o							\
@@ -97,3 +98,6 @@ clean:
 
 load: main.bin
 	openocd -f fwload-$(TARGET).openocd
+
+inc/version.h:
+	sh -c 'echo "#define __VERSION \"$$(./setlocalversion)\""' > inc/version.h
