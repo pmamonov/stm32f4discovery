@@ -4,3 +4,4 @@
 *.map
 *.swp
 tags
+inc/version.h
