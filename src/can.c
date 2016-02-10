@@ -159,8 +159,6 @@ void task_can(void *vpars)
 		while (queue_pop(&rx_queue, &cmsg) == 0) {
 			len = cmsg.DLC;
 			msg = cmsg.Data;
-			can_stat.crecv += 1;
-			can_stat.brecv += len;
 			if (len == sizeof(*msg) &&
 			    msg->type == CAN_MSG_PING &&
 			    msg->sender != 0) {
@@ -260,5 +258,9 @@ void CEC_CAN_IRQHandler(void)
 		}
 		if (queue_push(&rx_queue_isr, &RxMessage))
 			return;
+		else {
+			can_stat.crecv += 1;
+			can_stat.brecv += RxMessage.DLC;
+		}
 	}
 }
