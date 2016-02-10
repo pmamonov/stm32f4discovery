@@ -66,10 +66,10 @@ int queue_swap(struct queue *q1, struct queue *q2)
 {
 	struct queue tmp;
 
-	if (queue_lock(q1))
-		return -1;
-	if (queue_lock(q2)) {
-		queue_unlock(q1);
+	taskDISABLE_INTERRUPTS();
+
+	if (q1->sem || q2->sem) {
+		taskENABLE_INTERRUPTS();
 		return -1;
 	}
 
@@ -77,7 +77,6 @@ int queue_swap(struct queue *q1, struct queue *q2)
 	memcpy(q1, q2, sizeof(*q1));
 	memcpy(q2, &tmp, sizeof(*q1));
 
-	queue_unlock(q1);
-	queue_unlock(q2);
+	taskENABLE_INTERRUPTS();
 	return 0;
 }
