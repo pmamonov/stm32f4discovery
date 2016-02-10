@@ -96,6 +96,9 @@ clean:
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+src/app.o: inc/version.h src/app.c
+	$(CC) $(CFLAGS) -c src/app.c -o $@
+
 load: main.bin
 	openocd -f fwload-$(TARGET).openocd
 
