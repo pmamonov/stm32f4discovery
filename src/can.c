@@ -246,17 +246,19 @@ void CEC_CAN_IRQHandler(void)
 #endif
 {
 	CanRxMsg RxMessage;
-
-	CAN_Receive(CANx, CAN_FIFO0, &RxMessage);
-	if (dump_packets) {
-		int i;
-		printf("\r\nCAN packet received\r\n");
-		printf("StdId: %x\r\n", RxMessage.StdId);
-		printf("ExtId: %x\r\n", RxMessage.ExtId);
-		printf("payload(%d): ", RxMessage.DLC);
-		for (i = 0; i < RxMessage.DLC; i++)
-			printf(" %02x", RxMessage.Data[i]);
-		printf("\r\n");
+	while (CAN_MessagePending(CANx, CAN_FIFO0)) {
+		CAN_Receive(CANx, CAN_FIFO0, &RxMessage);
+		if (dump_packets) {
+			int i;
+			printf("\r\nCAN packet received\r\n");
+			printf("StdId: %x\r\n", RxMessage.StdId);
+			printf("ExtId: %x\r\n", RxMessage.ExtId);
+			printf("payload(%d): ", RxMessage.DLC);
+			for (i = 0; i < RxMessage.DLC; i++)
+				printf(" %02x", RxMessage.Data[i]);
+			printf("\r\n");
+		}
+		if (queue_push(&rx_queue_isr, &RxMessage))
+			return;
 	}
-	queue_push(&rx_queue_isr, &RxMessage);
 }
