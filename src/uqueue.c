@@ -4,18 +4,21 @@
 
 static int queue_lock(struct queue *q)
 {
+	int ret = -1;
+
 	taskDISABLE_INTERRUPTS();
 	if (q->sem == 0) {
 		q->sem = 1;
-		return 0;
+		ret = 0;
 	}
 	taskENABLE_INTERRUPTS();
-	return -1;
+	return ret;
 }
 
 static void queue_unlock(struct queue *q)
 {
-	q->sem = 0;
+	taskDISABLE_INTERRUPTS();
+		q->sem = 0;
 	taskENABLE_INTERRUPTS();
 }
 
