@@ -23,6 +23,8 @@
 #include "can.h"
 #include "can_msg.h"
 
+#include "delay.h"
+
 #ifdef TARGET_F407
 #define LED_GPIO GPIOD
 #define LED_PIN GPIO_Pin_15
@@ -147,6 +149,23 @@ void task_chat(void *vpars)
 			if (strcmp(tk, "stop") == 0) {
 				for (i = 0; i < CAN_NUM_MB; i++)
 					CAN_CancelTransmit(CANx, i);
+			} else if (strcmp(tk, "udelay") == 0) {
+				TickType_t tim;
+				int cnt, del;
+
+				tk = strtok(NULL, " ");
+				if (tk == NULL)
+					goto cmd_error;
+				del = strtol(tk, NULL, 10);
+				tk = strtok(NULL, " ");
+				if (tk == NULL)
+					goto cmd_error;
+				cnt = strtol(tk, NULL, 10);
+				tim = xTaskGetTickCount();
+				while (cnt--)
+					udelay(del);
+				tim = xTaskGetTickCount() - tim;
+				printf("time elapsed: %d ms\r\n", tim);
 			} else if (strcmp(tk, "sleep") == 0) {
 				int t;
 
