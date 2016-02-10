@@ -24,6 +24,7 @@
 #include "can_msg.h"
 
 #include "delay.h"
+#include "version.h"
 
 #ifdef TARGET_F407
 #define LED_GPIO GPIOD
@@ -106,6 +107,8 @@ int main(void)
 	setvbuf(stdin, NULL, _IONBF, 0);
 	setvbuf(stdout, NULL, _IONBF, 0);
 	setvbuf(stderr, NULL, _IONBF, 0);
+
+	printf("\r\n\nuCAN" __VERSION "\r\n\n");
 
 	can_init();
 
