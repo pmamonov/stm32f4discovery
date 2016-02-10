@@ -177,18 +177,17 @@ void can_filter_setup(unsigned int id, unsigned int mask)
 {
 	CAN_FilterInitTypeDef  filter;
 
-	id &= 0x3ffff;
+	id &= 0x7ff;
+	mask &= 0x7ff;
 	can_id = id;
-	id = id << 3;
-	mask = (mask & 0x3ffff) << 3;
+	id = id << 5;
+	mask = (mask & 0x7ff) << 5;
 
 	filter.CAN_FilterNumber = 0;
 	filter.CAN_FilterMode = CAN_FilterMode_IdMask;
-	filter.CAN_FilterScale = CAN_FilterScale_32bit;
-	filter.CAN_FilterIdHigh = (id >> 16);
+	filter.CAN_FilterScale = CAN_FilterScale_16bit;
 	filter.CAN_FilterIdLow = id;
-	filter.CAN_FilterMaskIdHigh = 0xffff & (mask >> 16);
-	filter.CAN_FilterMaskIdLow = 0xffff & mask;
+	filter.CAN_FilterMaskIdLow = mask;
 	filter.CAN_FilterFIFOAssignment = 0;
 	filter.CAN_FilterActivation = ENABLE;
 	CAN_FilterInit(&filter);
