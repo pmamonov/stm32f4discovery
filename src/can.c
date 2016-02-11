@@ -5,6 +5,7 @@
 #ifdef TARGET_F407
 #include "stm32f4xx_gpio.h"
 #include "misc.h"
+#include "f4d_leds.h"
 #endif
 #ifdef TARGET_F091
 #include "stm32f0xx_gpio.h"
@@ -145,6 +146,10 @@ void can_init()
 	queue_init(&rx_queue_isr, sizeof(rx_msg_isr[0]), RX_QUEUE_LEN, &rx_msg_isr[0]);
 	NVIC_Config();
 	CAN_Config();
+#ifdef TARGET_F407
+	led_init(&f4d_led_orange);
+	led_init(&f4d_led_green);
+#endif
 };
 
 void task_can(void *vpars)
@@ -195,6 +200,9 @@ void can_xmit(unsigned int id, unsigned char *data, int len)
 {
 	CanTxMsg TxMessage;
 
+#ifdef TARGET_F407
+	led_on(&f4d_led_orange);
+#endif
 	can_stat.csent += 1;
 	can_stat.bsent += len;
 
@@ -208,6 +216,9 @@ void can_xmit(unsigned int id, unsigned char *data, int len)
 		TxMessage.Data[len] = data[len];
 	while (CAN_Transmit(CANx, &TxMessage) == CAN_TxStatus_NoMailBox)
 		;
+#ifdef TARGET_F407
+	led_off(&f4d_led_orange);
+#endif
 }
 
 void can_dump_tx()
@@ -244,6 +255,10 @@ void CEC_CAN_IRQHandler(void)
 #endif
 {
 	CanRxMsg RxMessage;
+
+#ifdef TARGET_F407
+	led_on(&f4d_led_green);
+#endif
 	while (CAN_MessagePending(CANx, CAN_FIFO0)) {
 		CAN_Receive(CANx, CAN_FIFO0, &RxMessage);
 		if (dump_packets) {
@@ -263,4 +278,7 @@ void CEC_CAN_IRQHandler(void)
 			can_stat.brecv += RxMessage.DLC;
 		}
 	}
+#ifdef TARGET_F407
+	led_off(&f4d_led_green);
+#endif
 }
