@@ -116,7 +116,7 @@ int main(void)
 		    tskIDLE_PRIORITY + 1, NULL);
 
 	xTaskCreate(task_can, "task_can", 1000, NULL,
-		    tskIDLE_PRIORITY + 1, NULL);
+		    tskIDLE_PRIORITY + 3, NULL);
 
 	xTaskCreate(task_chat, "task_chat", 1000, NULL,
 		    tskIDLE_PRIORITY + 1, NULL);
