@@ -152,28 +152,17 @@ void can_init()
 #endif
 };
 
-void task_can(void *vpars)
+int can_recv(unsigned char *msg)
 {
 	CanRxMsg cmsg;
-	struct can_msg *msg;
-	unsigned int to;
-	int len;
+	int ret = -1;
 
-	while (1) {
-		queue_swap(&rx_queue, &rx_queue_isr);
-		while (queue_pop(&rx_queue, &cmsg) == 0) {
-			len = cmsg.DLC;
-			msg = cmsg.Data;
-			if (len == sizeof(*msg) &&
-			    msg->type == CAN_MSG_PING &&
-			    msg->sender != 0) {
-				to = msg->sender;
-				msg->sender = 0;
-				can_xmit(to, msg, len);
-			}
-		}
+	while (queue_pop(&rx_queue, &cmsg)) {
 		vTaskDelay(1);
-	};
+		queue_swap(&rx_queue, &rx_queue_isr);
+	}
+	memcpy(msg, cmsg.Data, cmsg.DLC);
+	return cmsg.DLC;
 }
 
 void can_filter_setup(unsigned int id, unsigned int mask)

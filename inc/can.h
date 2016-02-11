@@ -45,9 +45,9 @@ struct can_stat {
 void can_init();
 void can_filter_setup(unsigned int id, unsigned int mask);
 void can_xmit(unsigned int id, unsigned char *data, int len);
+int can_recv(unsigned char *msg);
 void can_dump_tx();
 void can_dump_pkt(int on);
-void task_can(void *vpars);
 void can_stat_reset();
 struct can_stat *can_stat_get();
 void can_stat_dump();

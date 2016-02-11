@@ -41,6 +41,7 @@ __ALIGN_BEGIN  USB_OTG_CORE_HANDLE  USB_OTG_dev  __ALIGN_END;
 
 void task_chat(void* vpars);
 void task_blink(void* vpars);
+void task_can(void *vpars);
 
 int main(void)
 {
@@ -301,6 +302,24 @@ void task_blink(void *vpars)
 		vTaskDelay(100);
 		GPIO_ResetBits(LED_GPIO, LED_PIN);
 		vTaskDelay(100);
+	}
+}
+
+void task_can(void *vpars)
+{
+	struct can_msg msg;
+	unsigned int to;
+	int len;
+
+	while (1) {
+		len = can_recv(&msg);
+		if (len == sizeof(msg) &&
+		    msg.type == CAN_MSG_PING &&
+		    msg.sender != 0) {
+			to = msg.sender;
+			msg.sender = 0;
+			can_xmit(to, &msg, len);
+		}
 	}
 }
 
