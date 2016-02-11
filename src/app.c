@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -25,6 +26,11 @@
 
 #include "delay.h"
 #include "version.h"
+
+#define TXRXDELTA 50
+#define PING_TIMEOUT (2 * TXRXDELTA / 10)
+static volatile uint32_t ping_pending[TXRXDELTA];
+static volatile int ping_rx, ping_tx, ping_pending_count, ping_trace;
 
 #ifdef TARGET_F407
 #define PS1 "uCAN-F407" __VERSION "> "
@@ -126,6 +132,84 @@ int main(void)
 	vTaskStartScheduler();
 }
 
+static inline void ping_add_pending(uint32_t x)
+{
+	int i = 0;
+
+	while (i < TXRXDELTA && ping_pending[i])
+		i++;
+	if (i < TXRXDELTA) {
+		ping_pending[i] = x;
+		if (ping_trace)
+			printf("s %08x\r\n", x);
+	}
+}
+
+static inline int ping_remove_pending(uint32_t x)
+{
+	int i = 0;
+
+	while (i < TXRXDELTA && ping_pending[i] != x)
+		i++;
+	if (i < TXRXDELTA) {
+		ping_pending[i] = 0;
+		if (ping_trace)
+			printf("a %08x\r\n", x);
+		return 1;
+	}
+	return 0;
+}
+
+static void can_ping(int id, int count)
+{
+	TickType_t tim, timp;
+	struct can_msg msg;
+	struct can_stat *stat;
+	int delta, pending;
+
+	msg.type = CAN_MSG_PING;
+	msg.sender = can_id;
+
+	can_stat_reset();
+	tim = xTaskGetTickCount();
+
+	ping_tx = 0;
+	ping_rx = 0;
+	delta = 0;
+	memset(ping_pending, 0, sizeof(ping_pending));
+	while (count--) {
+		timp = xTaskGetTickCount();
+		while (1) {
+			taskDISABLE_INTERRUPTS();
+			pending = ping_pending_count;
+			taskENABLE_INTERRUPTS();
+			if (pending < TXRXDELTA)
+				break;
+			if (xTaskGetTickCount() - timp > PING_TIMEOUT) {
+				taskDISABLE_INTERRUPTS();
+				memset(ping_pending, 0, sizeof(ping_pending));
+				ping_pending_count = 0;
+				taskENABLE_INTERRUPTS();
+				break;
+			}
+			vTaskDelay(1);
+		}
+		msg.data = count + 1;
+		taskDISABLE_INTERRUPTS();
+		ping_add_pending(msg.data);
+		ping_pending_count += 1;
+		taskENABLE_INTERRUPTS();
+		can_xmit(id, &msg, sizeof(msg));
+		ping_tx += 1;
+	}
+
+	vTaskDelay(PING_TIMEOUT);
+	tim = xTaskGetTickCount() - tim;
+	printf("TX: %d\r\n", ping_tx);
+	printf("RX: %d\r\n", ping_rx);
+	printf("Time: %d ms\r\n", tim);
+}
+
 void task_chat(void *vpars)
 {
 #define CMD_LEN 255
@@ -200,11 +284,7 @@ void task_chat(void *vpars)
 					can_stat_reset();
 				can_stat_dump();
 			} else if (strcmp(tk, "ping") == 0) {
-#define TXRXDELTA 50
-				TickType_t tim, timp;
-				struct can_msg msg;
-				int id, count, delta = 0;
-				struct can_stat *stat;
+				int id, count;
 
 				tk = strtok(NULL, " ");
 				if (tk == NULL)
@@ -216,30 +296,13 @@ void task_chat(void *vpars)
 					goto cmd_error;
 				count = strtol(tk, NULL, 10);
 
-				msg.type = CAN_MSG_PING;
-				msg.sender = can_id;
+				tk = strtok(NULL, " ");
+				if (tk == NULL)
+					ping_trace = 0;
+				else
+					ping_trace = 1;
 
-				can_stat_reset();
-				tim = xTaskGetTickCount();
-
-				while (count--) {
-					timp = xTaskGetTickCount();
-					while (1) {
-						stat = can_stat_get();
-						if (stat->csent - stat->crecv < TXRXDELTA + delta)
-							break;
-						if (xTaskGetTickCount() - timp > TXRXDELTA / 10) {
-							delta = stat->csent - stat->crecv;
-							break;
-						}
-					}
-					can_xmit(id, &msg, sizeof(msg));
-				}
-
-				vTaskDelay(2 * TXRXDELTA / 10);
-				tim = xTaskGetTickCount() - tim;
-				printf("time elapsed: %d ms\r\n", tim);
-				can_stat_dump();
+				can_ping(id, count);
 			} else if (strcmp(tk, "send") == 0) {
 				unsigned int id, len;
 				unsigned char data[8];
@@ -314,11 +377,18 @@ void task_can(void *vpars)
 	while (1) {
 		len = can_recv(&msg);
 		if (len == sizeof(msg) &&
-		    msg.type == CAN_MSG_PING &&
-		    msg.sender != 0) {
-			to = msg.sender;
-			msg.sender = 0;
-			can_xmit(to, &msg, len);
+		    msg.type == CAN_MSG_PING) {
+			if (msg.sender != 0) {
+				to = msg.sender;
+				msg.sender = 0;
+				msg.data = msg.data;
+				can_xmit(to, &msg, len);
+			} else {
+				taskDISABLE_INTERRUPTS();
+				ping_rx += ping_remove_pending(msg.data);
+				ping_pending_count -= 1;
+				taskENABLE_INTERRUPTS();
+			}
 		}
 	}
 }
