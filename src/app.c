@@ -26,6 +26,8 @@
 #include "delay.h"
 #include "version.h"
 
+#define PS1 "uCAN" __VERSION "> "
+
 #ifdef TARGET_F407
 #define LED_GPIO GPIOD
 #define LED_PIN GPIO_Pin_15
@@ -130,6 +132,8 @@ void task_chat(void *vpars)
 	char cmd[CMD_LEN+1];
 	int pos = 0;
 	char *tk;
+
+	printf(PS1);
 
 	while (1) {
 		fflush(stdout);
@@ -260,13 +264,13 @@ void task_chat(void *vpars)
 				id = strtoul(tk, NULL, 0x10);
 				can_filter_setup(id, 0x7ff);
 			} else {
-				printf("unknown command");
+				printf("unknown command\r\n");
 			}
 			goto cmd_finish;
 cmd_error:
-			printf("can't parse command");
+			printf("can't parse command\r\n");
 cmd_finish:
-			printf("\r\nuCAN> ");
+			printf(PS1);
 			pos = 0;
 			continue;
 		}
