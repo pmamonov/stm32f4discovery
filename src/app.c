@@ -199,9 +199,11 @@ void task_chat(void *vpars)
 					can_stat_reset();
 				can_stat_dump();
 			} else if (strcmp(tk, "ping") == 0) {
-				TickType_t tim;
+#define TXRXDELTA 50
+				TickType_t tim, timp;
 				struct can_msg msg;
-				int id, count;
+				int id, count, delta = 0;
+				struct can_stat *stat;
 
 				tk = strtok(NULL, " ");
 				if (tk == NULL)
@@ -219,10 +221,21 @@ void task_chat(void *vpars)
 				can_stat_reset();
 				tim = xTaskGetTickCount();
 
-				while (count--)
+				while (count--) {
+					timp = xTaskGetTickCount();
+					while (1) {
+						stat = can_stat_get();
+						if (stat->csent - stat->crecv < TXRXDELTA + delta)
+							break;
+						if (xTaskGetTickCount() - timp > TXRXDELTA / 10) {
+							delta = stat->csent - stat->crecv;
+							break;
+						}
+					}
 					can_xmit(id, &msg, sizeof(msg));
+				}
 
-				vTaskDelay(10);
+				vTaskDelay(2 * TXRXDELTA / 10);
 				tim = xTaskGetTickCount() - tim;
 				printf("time elapsed: %d ms\r\n", tim);
 				can_stat_dump();
