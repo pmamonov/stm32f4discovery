@@ -151,7 +151,7 @@ void task_chat(void *vpars)
 			/* parse cmd */
 			cmd[pos] = 0;
 			tk = strtok(cmd, " ");
-			if (strlen(tk) == 0)
+			if (!tk || strlen(tk) == 0)
 				goto cmd_finish;
 			if (strcmp(tk, "stop") == 0) {
 				for (i = 0; i < CAN_NUM_MB; i++)
