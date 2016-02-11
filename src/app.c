@@ -26,15 +26,15 @@
 #include "delay.h"
 #include "version.h"
 
-#define PS1 "uCAN" __VERSION "> "
-
 #ifdef TARGET_F407
+#define PS1 "uCAN-F407" __VERSION "> "
 #define LED_GPIO GPIOD
 #define LED_PIN GPIO_Pin_15
 __ALIGN_BEGIN  USB_OTG_CORE_HANDLE  USB_OTG_dev  __ALIGN_END;
 #endif
 
 #ifdef TARGET_F091
+#define PS1 "uCAN-F091" __VERSION "> "
 #define LED_GPIO GPIOA
 #define LED_PIN GPIO_Pin_5
 #endif
