@@ -264,7 +264,7 @@ void task_chat(void *vpars)
 				id = strtoul(tk, NULL, 0x10);
 				can_filter_setup(id, 0x7ff);
 			} else {
-				printf("unknown command\r\n");
+				printf("unknown command `%s`\r\n", tk);
 			}
 			goto cmd_finish;
 cmd_error:
